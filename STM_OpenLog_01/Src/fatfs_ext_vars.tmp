@@ -1,0 +1,2 @@
+extern uint8_t retUSER;    /* Return value for USER */
+extern char USER_Path[4];  /* USER logical drive path */
