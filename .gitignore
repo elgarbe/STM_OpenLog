@@ -1,2 +1,8 @@
 STM_OpenLog_01/Debug/
 .metadata/
+.stackdump
+sh.exe.stackdump
+RemoteSystemsTempFiles/
+*.tmp
+*.ftl
+*.ftl_save
