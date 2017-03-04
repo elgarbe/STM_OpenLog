@@ -57,7 +57,11 @@ DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+FATFS mynewdiskFatFs; /* File system object for User logical drive */
+FIL MyFile; /* File object */
+char mynewdiskPath[4]; /* User logical drive path */
+uint32_t wbytes; /* File write counts */
+uint8_t wtext[] = "text to write logical disk by elgarbe"; /* File write buffer */
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,6 +104,20 @@ int main(void)
   MX_FATFS_Init();
 
   /* USER CODE BEGIN 2 */
+	if(FATFS_LinkDriver(&USER_Driver, mynewdiskPath) == 0)
+	{
+		if(f_mount(&mynewdiskFatFs, (TCHAR const*)mynewdiskPath, 0) == FR_OK)
+		{
+			if(f_open(&MyFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
+			{
+				if(f_write(&MyFile, wtext, sizeof(wtext), (void *)&wbytes) == FR_OK)
+				{
+					f_close(&MyFile);
+				}
+			}
+		}
+	}
+  FATFS_UnLinkDriver(mynewdiskPath);
 
   /* USER CODE END 2 */
 

@@ -57,6 +57,7 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 extern Diskio_drvTypeDef  USER_Driver;
+extern SPI_HandleTypeDef hspi1;
 
 /* USER CODE END 0 */
    
