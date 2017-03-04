@@ -153,6 +153,15 @@ void USART1_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
+{
+	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
+}
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

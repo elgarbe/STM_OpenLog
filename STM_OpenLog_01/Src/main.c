@@ -137,15 +137,14 @@ int main(void)
    * Start receiving data over uart. It will be done in DMA, circular mode.
    * One call is enough to never stops
    */
-  HAL_UART_Receive_DMA(&huart1, rxBuff, 512);
+  HAL_UART_Receive_DMA(&huart1, rxBuff, 8);
 
   while (1)
   {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
-	  HAL_Delay(250);
+
   }
   /* USER CODE END 3 */
 
