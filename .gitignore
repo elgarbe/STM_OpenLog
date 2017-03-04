@@ -3,6 +3,6 @@ STM_OpenLog_01/Debug/
 .stackdump
 sh.exe.stackdump
 RemoteSystemsTempFiles/
-.tmp
-.ftl
-.ftl_save
+STM_OpenLog_01/Src/*.tmp
+STM_OpenLog_01/Src/*.ftl
+STM_OpenLog_01/Src/*.ftl_save
