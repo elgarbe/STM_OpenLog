@@ -1,2 +1,0 @@
-		#t/*## FatFS: Link the USER driver ###########################*/
-		#tretUSER = FATFS_LinkDriver(&USER_Driver, USER_Path);
