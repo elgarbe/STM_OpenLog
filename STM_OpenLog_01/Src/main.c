@@ -74,6 +74,7 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+uint8_t rxBuff[512];
 
 /* USER CODE END PFP */
 
@@ -113,9 +114,17 @@ int main(void)
 				if(f_write(&MyFile, wtext, sizeof(wtext), (void *)&wbytes) == FR_OK)
 				{
 					f_close(&MyFile);
+				}else{
+					Error_Handler();
 				}
+			}else{
+				Error_Handler();
 			}
+		}else{
+			Error_Handler();
 		}
+	}else{
+		Error_Handler();
 	}
   FATFS_UnLinkDriver(mynewdiskPath);
 
@@ -123,6 +132,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  /*
+   * Start receiving data over uart. It will be done in DMA, circular mode.
+   * One call is enough to never stops
+   */
+  HAL_UART_Receive_DMA(&huart1, rxBuff, 512);
+
   while (1)
   {
   /* USER CODE END WHILE */
@@ -304,6 +320,8 @@ void Error_Handler(void)
   /* User can add his own implementation to report the HAL error return state */
   while(1) 
   {
+	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
+	  HAL_Delay(150);
   }
   /* USER CODE END Error_Handler */ 
 }
