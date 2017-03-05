@@ -63,6 +63,13 @@ void MX_FATFS_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+FRESULT fs_WriteFile(uint8_t f_TipoEscritura);
+
+FRESULT fs_CreateLOG(uint16_t numLOG);
+uint16_t fs_get_last_log (char* path);
+
+#define UART_RB_SIZE 1024
+#define SD_WR_BUFF_SIZE (512)
 /* USER CODE END Prototypes */
 #ifdef __cplusplus
 }

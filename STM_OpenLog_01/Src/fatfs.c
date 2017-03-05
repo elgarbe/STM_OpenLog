@@ -48,6 +48,13 @@ char USER_Path[4];  /* USER logical drive path */
 
 /* USER CODE BEGIN Variables */
 
+FATFS FatFs; 		/* File system object for User logical drive */
+FIL   Fil; 		/* File object */
+uint32_t wbytes; 	/* File write counts */
+uint8_t wtext[] = "text to write logical disk by elgarbe"; /* File write buffer */
+extern uint8_t rxBuff[512];
+extern void Error_Handler(void);
+
 /* USER CODE END Variables */    
 
 void MX_FATFS_Init(void) 
@@ -56,7 +63,20 @@ void MX_FATFS_Init(void)
 		  retUSER = FATFS_LinkDriver(&USER_Driver, USER_Path);
 
   /* USER CODE BEGIN Init */
-  /* additional user code for init */     
+	uint16_t lastLog=0;
+	if(retUSER == 0)
+	{
+		if(f_mount(&FatFs, (TCHAR const*)USER_Path, 0) == FR_OK)
+		{
+			// Busco el último LOG en la SD y creo el archivo para loguear
+			lastLog = fs_get_last_log("/");
+			fs_CreateLOG(lastLog + 1);
+		}else{
+			Error_Handler();
+		}
+	}else{
+		Error_Handler();
+	}
   /* USER CODE END Init */
 }
 
@@ -73,6 +93,98 @@ DWORD get_fattime(void)
 }
 
 /* USER CODE BEGIN Application */
+FRESULT fs_CreateLOG(uint16_t numLOG)
+{
+	FRESULT rc;				/* Result code */
+	uint8_t NomLOG[11]="LOGxxxx.TXT";
+	NomLOG[3] = numLOG/1000 + 48;
+	numLOG -= (numLOG/1000)*1000;
+	NomLOG[4] = numLOG/100 + 48;
+	numLOG -= (numLOG/100)*100;
+	NomLOG[5] = numLOG/10 + 48;
+	numLOG -= (numLOG/10)*10;
+	NomLOG[6] = numLOG/1 + 48;
+	rc = f_open(&Fil, (const char *)NomLOG, FA_WRITE | FA_CREATE_ALWAYS);
+	if(rc == FR_OK)
+	{
+		f_sync(&Fil);
+	}
+	return rc;
+}
+
+FRESULT fs_WriteFile(uint8_t f_TipoEscritura)
+{
+	FRESULT rc;				// Result code
+	UINT bw;				// bytes escritos
+	uint16_t count;
+
+	// Verifico si debo escrivir SD_WR_BUFF_SIZE
+	if(f_TipoEscritura == 1)
+	{
+		count = SD_WR_BUFF_SIZE;
+
+	}else // o si son los ultimos bytes que había en el buffer
+	{
+		// Resto 1 ya que el caracter ESC no lo quiero grabar en la SD Card
+//		count = RingBuffer_GetCount(&rxring) - 1;
+	}
+
+	// Extraigo count bytes y los pongo en sd_write_buf
+//	RingBuffer_PopMult(&rxring, sd_write_buf, count);
+
+	// Intento escrivir los datos que hay en sd_write_buf. bw guarda la cantidad de bytes escritos
+	rc = f_write(&Fil, rxBuff, count, &bw);
+
+	// Verifico que se hallan escrito tantos bytes como WR_BUFF_SIZE.
+	// No sé si es muy útil esta verificacion. Quizás sirva para detectar la última escritura
+	// que puede no ser de WR_BUFF_SIZE bytes y cerrar el archivo. Pero si es justo de WR_BUFF_SIZE bytes?
+	if(bw == SD_WR_BUFF_SIZE)
+	{
+		// Me aseguro de que se almacene en la SD todos los datos.
+		rc = f_sync(&Fil);
+		return rc;
+	}else
+	{
+		// escribí menos bytes que WR_BUFF_SIZE. Deve ser que son los ultimos bytes que había en el RB
+//		rc = f_close(&Fil);
+		return 0;
+	}
+}
+
+/* Fusco el mayor de los LOGxxxx.TXT */
+uint16_t fs_get_last_log (char* path)
+{
+    FRESULT res;
+    FILINFO fno;
+    DIR dir;
+
+    uint16_t Fileint;		// El número del archivo en formato numerico
+    uint16_t Filemax=0;
+
+    res = f_opendir(&dir, path);						/* Open the directory */
+    if (res == FR_OK)
+    {
+        for (;;)
+        {
+            res = f_readdir(&dir, &fno);                   /* Read a directory item */
+            if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
+            if (fno.fname[0] == '.') continue;             /* Ignore dot entry */
+            if (fno.fattrib & AM_ARC) 						/* It is a file. */
+            {
+            	// Verifico que sea un LOGxxxx.TXT
+                if(fno.fname[0]=='L' && fno.fname[1]=='O' && fno.fname[2]=='G' &&
+                	fno.fname[7]=='.' && fno.fname[8]=='T' && fno.fname[9]=='X' && fno.fname[10]=='T')
+                {
+					Fileint = (fno.fname[6]-48)     + (fno.fname[5]-48)*10 +
+							  (fno.fname[4]-48)*100 + (fno.fname[3]-48)*1000;
+					if(Fileint>Filemax)
+						Filemax=Fileint;
+                }
+            }
+        }
+    }
+    return Filemax;
+}
      
 /* USER CODE END Application */
 

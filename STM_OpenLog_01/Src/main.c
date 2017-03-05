@@ -57,11 +57,7 @@ DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-FATFS mynewdiskFatFs; /* File system object for User logical drive */
-FIL MyFile; /* File object */
-char mynewdiskPath[4]; /* User logical drive path */
-uint32_t wbytes; /* File write counts */
-uint8_t wtext[] = "text to write logical disk by elgarbe"; /* File write buffer */
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,7 +70,8 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-uint8_t rxBuff[512];
+uint8_t rxBuff[UART_RB_SIZE];
+volatile uint8_t fIsHalfBufferFull=0;
 
 /* USER CODE END PFP */
 
@@ -105,28 +102,6 @@ int main(void)
   MX_FATFS_Init();
 
   /* USER CODE BEGIN 2 */
-	if(FATFS_LinkDriver(&USER_Driver, mynewdiskPath) == 0)
-	{
-		if(f_mount(&mynewdiskFatFs, (TCHAR const*)mynewdiskPath, 0) == FR_OK)
-		{
-			if(f_open(&MyFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
-			{
-				if(f_write(&MyFile, wtext, sizeof(wtext), (void *)&wbytes) == FR_OK)
-				{
-					f_close(&MyFile);
-				}else{
-					Error_Handler();
-				}
-			}else{
-				Error_Handler();
-			}
-		}else{
-			Error_Handler();
-		}
-	}else{
-		Error_Handler();
-	}
-  FATFS_UnLinkDriver(mynewdiskPath);
 
   /* USER CODE END 2 */
 
@@ -137,14 +112,25 @@ int main(void)
    * Start receiving data over uart. It will be done in DMA, circular mode.
    * One call is enough to never stops
    */
-  HAL_UART_Receive_DMA(&huart1, rxBuff, 8);
+  HAL_UART_Receive_DMA(&huart1, rxBuff, UART_RB_SIZE);
 
   while (1)
   {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
+		while(!fIsHalfBufferFull);	// Me quedo esperando a que la bandera sea distinta de 0
+		// La bandera es 1, significa que tengo el buffer tiene WR_BUFF_SIZE bytes en él
+		// La bandera es 2, significa que se ha encontrado el caracter ESC (27)
+		// Paso directamente la bandera a la funcion de escritura
+		fs_WriteFile(1);
+//		fIsHalfBufferFull = 0;
+		while(fIsHalfBufferFull);	// Me quedo esperando a que la bandera sea distinta de 0
+		// La bandera es 1, significa que tengo el buffer tiene WR_BUFF_SIZE bytes en él
+		// La bandera es 2, significa que se ha encontrado el caracter ESC (27)
+		// Paso directamente la bandera a la funcion de escritura
+		fs_WriteFile(1);
+//		fIsHalfBufferFull = 0;
   }
   /* USER CODE END 3 */
 

@@ -36,7 +36,7 @@
 #include "stm32f0xx_it.h"
 
 /* USER CODE BEGIN 0 */
-
+extern volatile uint8_t fIsHalfBufferFull;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -155,12 +155,14 @@ void USART1_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
-	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
+	fIsHalfBufferFull=1;
+	HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
+	fIsHalfBufferFull=0;
+	HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
 }
 
 /* USER CODE END 1 */
