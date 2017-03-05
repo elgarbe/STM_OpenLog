@@ -121,19 +121,13 @@ FRESULT fs_WriteFile(uint8_t f_TipoEscritura)
 	// Verifico si debo escrivir SD_WR_BUFF_SIZE
 	if(f_TipoEscritura == 1)
 	{
-		count = SD_WR_BUFF_SIZE;
-
+		// Intento escrivir los datos que hay en sd_write_buf. bw guarda la cantidad de bytes escritos
+		rc = f_write(&Fil, rxBuff, SD_WR_BUFF_SIZE, &bw);
 	}else // o si son los ultimos bytes que había en el buffer
 	{
-		// Resto 1 ya que el caracter ESC no lo quiero grabar en la SD Card
-//		count = RingBuffer_GetCount(&rxring) - 1;
+		// Intento escrivir los datos que hay en sd_write_buf. bw guarda la cantidad de bytes escritos
+		rc = f_write(&Fil, &rxBuff[512], SD_WR_BUFF_SIZE, &bw);
 	}
-
-	// Extraigo count bytes y los pongo en sd_write_buf
-//	RingBuffer_PopMult(&rxring, sd_write_buf, count);
-
-	// Intento escrivir los datos que hay en sd_write_buf. bw guarda la cantidad de bytes escritos
-	rc = f_write(&Fil, rxBuff, count, &bw);
 
 	// Verifico que se hallan escrito tantos bytes como WR_BUFF_SIZE.
 	// No sé si es muy útil esta verificacion. Quizás sirva para detectar la última escritura

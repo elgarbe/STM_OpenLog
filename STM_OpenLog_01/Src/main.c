@@ -129,7 +129,7 @@ int main(void)
 		// La bandera es 1, significa que tengo el buffer tiene WR_BUFF_SIZE bytes en él
 		// La bandera es 2, significa que se ha encontrado el caracter ESC (27)
 		// Paso directamente la bandera a la funcion de escritura
-		fs_WriteFile(1);
+		fs_WriteFile(0);
 //		fIsHalfBufferFull = 0;
   }
   /* USER CODE END 3 */
