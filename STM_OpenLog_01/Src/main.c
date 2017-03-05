@@ -119,18 +119,11 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		while(!fIsHalfBufferFull);	// Me quedo esperando a que la bandera sea distinta de 0
-		// La bandera es 1, significa que tengo el buffer tiene WR_BUFF_SIZE bytes en él
-		// La bandera es 2, significa que se ha encontrado el caracter ESC (27)
-		// Paso directamente la bandera a la funcion de escritura
+		while(fIsHalfBufferFull == 0);	// Me quedo esperando a que la bandera sea distinta de 0
 		fs_WriteFile(1);
-//		fIsHalfBufferFull = 0;
-		while(fIsHalfBufferFull);	// Me quedo esperando a que la bandera sea distinta de 0
-		// La bandera es 1, significa que tengo el buffer tiene WR_BUFF_SIZE bytes en él
-		// La bandera es 2, significa que se ha encontrado el caracter ESC (27)
-		// Paso directamente la bandera a la funcion de escritura
+
+		while(fIsHalfBufferFull == 1);	// Me quedo esperando a que la bandera sea distinta de 0
 		fs_WriteFile(0);
-//		fIsHalfBufferFull = 0;
   }
   /* USER CODE END 3 */
 
@@ -221,7 +214,7 @@ static void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 1000000;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -305,8 +298,8 @@ void Error_Handler(void)
   /* User can add his own implementation to report the HAL error return state */
   while(1) 
   {
-	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
-	  HAL_Delay(150);
+//	  HAL_GPIO_TogglePin(XMIT_LED_GPIO_Port, XMIT_LED_Pin);
+//	  HAL_Delay(150);
   }
   /* USER CODE END Error_Handler */ 
 }

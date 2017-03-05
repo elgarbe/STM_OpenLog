@@ -51,7 +51,7 @@ char USER_Path[4];  /* USER logical drive path */
 FATFS FatFs; 		/* File system object for User logical drive */
 FIL   Fil; 		/* File object */
 uint32_t wbytes; 	/* File write counts */
-uint8_t wtext[] = "text to write logical disk by elgarbe"; /* File write buffer */
+//uint8_t wtext[] = "text to write logical disk by elgarbe"; /* File write buffer */
 extern uint8_t rxBuff[512];
 extern void Error_Handler(void);
 
@@ -64,6 +64,8 @@ void MX_FATFS_Init(void)
 
   /* USER CODE BEGIN Init */
 	uint16_t lastLog=0;
+	UINT bw;				// bytes escritos
+	uint8_t dummyWrite = '\n';
 	if(retUSER == 0)
 	{
 		if(f_mount(&FatFs, (TCHAR const*)USER_Path, 0) == FR_OK)
@@ -71,6 +73,10 @@ void MX_FATFS_Init(void)
 			// Busco el último LOG en la SD y creo el archivo para loguear
 			lastLog = fs_get_last_log("/");
 			fs_CreateLOG(lastLog + 1);
+			// First write to the File is too slow. And when I'm working at more than 115200bps uSD loose first bytes.
+			// So I'made a dummy write of a CR character. Nexts writing will be at full speed.
+			f_write(&Fil, &dummyWrite, 1, &bw);
+//			f_lseek(&Fil, 0);
 		}else{
 			Error_Handler();
 		}
@@ -116,7 +122,6 @@ FRESULT fs_WriteFile(uint8_t f_TipoEscritura)
 {
 	FRESULT rc;				// Result code
 	UINT bw;				// bytes escritos
-	uint16_t count;
 
 	// Verifico si debo escrivir SD_WR_BUFF_SIZE
 	if(f_TipoEscritura == 1)
